@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>8 Splines</title>
+</head>
+<body>
+
+<canvas id="myCanvas" width="1800" height="900" style="border:1px solid #d3d3d3;"></canvas>
+
+<script>
+    const segments = 10;
+    let x = [], y = [], // Points coordinates
+        xC = -1, yC = -1; // Cursor coordinates
+
+    const ctx = document.getElementById("myCanvas").getContext("2d");
+
+    function spline() {
+        let e1 = new Array(segments),
+            e2 = new Array(segments),
+            e3 = new Array(segments),
+            e4 = new Array(segments),
+            x1, x2, x3, x4, y1, y2, y3, y4,
+            t;
+
+        for (let i = 0; i < segments; i++) {
+            t = (i + 1) / segments;
+            e1[i] = (((3 - t) * t - 3) * t + 1) / 6;
+            e2[i] = ((3 * t - 6) * t * t + 4) / 6;
+            e3[i] = (((3 - 3 * t) * t + 3) * t + 1) / 6;
+            e4[i] = t * t * t / 6;
+        }
+
+        x2 = x[0];
+        x3 = x[1];
+        x4 = x[2];
+        y2 = y[0];
+        y3 = y[1];
+        y4 = y[2];
+        ctx.moveTo((x2 + 4 * x3 + x4) / 6, (y2 + 4 * y3 + y4) / 6);
+
+        for (let i = 3; i < x.length; i++) {
+            x1 = x2;
+            x2 = x3;
+            x3 = x4;
+            x4 = x[i];
+            y1 = y2;
+            y2 = y3;
+            y3 = y4;
+            y4 = y[i];
+
+            for (let j = 0; j < segments; j++) {
+                ctx.lineTo(e1[j] * x1 + e2[j] * x2 + e3[j] * x3 + e4[j] * x4,
+                    e1[j] * y1 + e2[j] * y2 + e3[j] * y3 + e4[j] * y4);
+            }
+        }
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, ctx.width, ctx.height);
+
+        // Points
+        ctx.fillStyle = 'red';
+        for (let i = 0; i < x.length; i++) {
+            ctx.beginPath();
+            ctx.arc(x[i], y[i], 5, 0, 2 * Math.PI, false);
+            ctx.fill();
+        }
+
+        // Lines
+        ctx.beginPath();
+        ctx.moveTo(x[0], y[0]);
+        for (let i = 1; i < x.length; i++) {
+            ctx.lineTo(x[i], y[i]);
+        }
+        
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Spline
+        ctx.beginPath();
+        spline();
+
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+    }
+
+    function myClick() {
+        if (xC > 0 && yC > 0) {
+            x.push(xC);
+            y.push(yC);
+            draw();
+        }
+    }
+
+    let myMousemove = function (event) {
+        xC = event.pageX - 8;
+        yC = event.pageY - 8;
+    }
+
+    document.getElementById("myCanvas").addEventListener("mousemove", myMousemove);
+    document.getElementById("myCanvas").addEventListener("mouseup", myClick)
+
+</script>
+</body>
+</html>
